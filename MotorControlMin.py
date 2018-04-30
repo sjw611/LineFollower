@@ -1,13 +1,20 @@
 from microbit import *
 
 def main():
-	pass
+    display.scroll('Go', wait=False, loop=True)
+    while True:
+        if left_detect():
+            motors(-0.2, 0.2)
+        elif right_detect():
+            motors(0.2, -0.2)
+        else:
+            motors(0.3, 0.3)
 
 def left_detect():
-    return pin1.read_analog() > 255:
+    return pin1.read_analog() > 255
 
 def right_detect():
-	return pin2.read_analog() > 255
+    return pin2.read_analog() > 255
 
 def motors(l,r):
     left_motor(l)
