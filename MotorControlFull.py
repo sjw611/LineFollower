@@ -55,6 +55,8 @@ _pwm_counters = [0, 0]
 
 
 def _set_motor(speed, forward_pin, backward_pin, pwm_index):
+    #  Increments the counter by the speed, if the counter goes over 1
+    #  then turn the motor on and reset the counter. 
     is_going_forward = speed > 0
     is_going_backwards = speed < 0
     is_motor_on = False
