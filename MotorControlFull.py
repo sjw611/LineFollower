@@ -47,10 +47,11 @@ def right_motor(speed):
     _set_motor(speed, pin16, pin0, pwm_index=1)
 
 
-_pwm_counters = [0, 0]
+
 # These counters are the globals used to keep track
-# of the pwm (pulse width modulation) counters used to set motor
+# of the pwm (pulse width modulation) signals used to set motor
 # speed to non binary values.
+_pwm_counters = [0, 0]
 
 
 def _set_motor(speed, forward_pin, backward_pin, pwm_index):
