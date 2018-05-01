@@ -1,8 +1,8 @@
 from microbit import *
 
 def main():
-    display.scroll('Go', wait=False, loop=True)
-    while True:
+    display.scroll('Go', wait=0, loop=1)
+    while 1:
         if left_detect():
             motors(-0.2, 0.2)
         elif right_detect():
