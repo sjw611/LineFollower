@@ -1,50 +1,49 @@
 from microbit import *
 
-# If exceeds this, go straight a bit
-MAX_WOBBLING = 5
-STRAIGHT_LINE_SPEED = 0.7
-RECOVER_WOBBLING_LINE_SPEED = 0.9
-TURN_SPEED = 0.5
+# TUNE THESE CONSTANTS TO GET BEST PERFORMANCE
+_ACCELERATION, _DECELERATION, _MIN_SPEED, _TURN_RATE = 0.1, 0.2, 0.1, 0.1
+
+_speed = _MIN_SPEED
+_current_turn = 0.0
+
 
 def main():
+    """
+    LOGIC:
+       Accelerate while pins either side of the line
+       Decelerate when a pin sees the line until minimum speed reached
+       Increase amount of turn gradually while needed and set back to zero as soon as line is no longer detected
+    """
     display.scroll('Go', wait=False, loop=True)
-    # One wobbling is from left -> right
-    # or right -> left
-    num_wobbling = 0
-    # Last seen line on the left -1, right 1, neither 0
-    last_seen = 0
     while True:
-        if is_left_seeing_line():
-            last_seen, num_wobbling = _handle_wobbling(
-                -1, last_seen, num_wobbling)
-        elif is_right_seeing_line():
-            last_seen, num_wobbling = _handle_wobbling(
-                1, last_seen, num_wobbling)
-        else:
-            set_motor_speeds(STRAIGHT_LINE_SPEED, STRAIGHT_LINE_SPEED)
 
+        if is_left_seeing_line():  # Slow down and turn left
+            _speed -= _DECELERATION
+            _speed = max(_speed, _MIN_SPEED)
+            _current_turn = min(_current_turn, 0.0) - _TURN_RATE
+            right_speed = _speed
+            left_speed = _speed + _current_turn
+        elif is_right_seeing_line():  # Slow down and turn right
+            _speed -= _DECELERATION
+            _speed = max(_speed, _MIN_SPEED)
+            _current_turn = max(_current_turn, 0.0) + _TURN_RATE
+            right_speed = _speed - _current_turn
+            left_speed = _speed
+        else:  # Go straight and accelerate
+            _speed += _ACCELERATION
+            _speed = min(_speed, 1.0)
+            _current_turn = 0.0
+            left_speed = _speed
+            right_speed = _speed
 
-def _handle_wobbling(now_seeing, last_seen, num_wobbling):
-    if last_seen + now_seeing == 0:
-        num_wobbling += 1
-    else:
-        num_wobbling = 0
-    
-    if num_wobbling > MAX_WOBBLING:
-        num_wobbling = 0
-        last_seen = 0
-        set_motor_speeds(
-            RECOVER_WOBBLING_LINE_SPEED, RECOVER_WOBBLING_LINE_SPEED)
-    else:
-        last_seen = now_seeing
-        set_motor_speeds(now_seeing * TURN_SPEED, now_seeing * -TURN_SPEED)
-        
-    return (last_seen, num_wobbling)
+        set_motor_speeds(left_speed, right_speed)
+
 
 def is_left_seeing_line():
     """
     Returns True iff the left sensor is detecting the black line.
     """
+
     return pin1.read_analog() > 255
 
 
@@ -52,6 +51,7 @@ def is_right_seeing_line():
     """
     Returns True iff the right sensor is detecting the black line.
     """
+
     return pin2.read_analog() > 255
 
 
@@ -59,6 +59,7 @@ def set_motor_speeds(left_speed, right_speed):
     """
     Set both motor speeds. Speeds are floats in the range [-1.0, 1.0]
     """
+
     left_motor(left_speed)
     right_motor(right_speed)
 
@@ -67,24 +68,28 @@ def left_motor(speed):
     """
     Set left motor speed. Speed is a float in the range [-1.0, 1.0]
     """
+
     _set_motor(speed, pin12, pin8, pwm_index=0)
 
 
 def right_motor(speed):
     """
-    Set the right motor speed. Speed is a float in the range [-1.0, 1.0]"""
+    Set the right motor speed. Speed is a float in the range [-1.0, 1.0]
+    """
+
     _set_motor(speed, pin16, pin0, pwm_index=1)
 
 
 # These counters are the globals used to keep track
 # of the pwm (pulse width modulation) signals used to set motor
 # speed to non binary values.
+
 _pwm_counters = [0, 0]
 
 
 def _set_motor(speed, forward_pin, backward_pin, pwm_index):
     #  Increments the counter by the speed, if the counter goes over 1
-    #  then turn the motor on and reset the counter. 
+    #  then turn the motor on and reset the counter.
     is_going_forward = speed > 0
     is_going_backwards = speed < 0
     is_motor_on = False
@@ -98,5 +103,3 @@ def _set_motor(speed, forward_pin, backward_pin, pwm_index):
 
 def _set_pin(pin, value):
     pin.write_digital(value)
-
-main()

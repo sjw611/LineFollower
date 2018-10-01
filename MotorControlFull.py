@@ -5,11 +5,11 @@ def main():
     display.scroll('Go', wait=False, loop=True)
     while True:
         if is_left_seeing_line():
-            set_motor_speeds(-0.2, 0.2)
+            set_motor_speeds(-0.5, 0.5)
         elif is_right_seeing_line():
-            set_motor_speeds(0.2, -0.2)
+            set_motor_speeds(0.5, -0.5)
         else:
-            set_motor_speeds(0.3, 0.3)
+            set_motor_speeds(0.8, 0.8)
 
 
 def is_left_seeing_line():
